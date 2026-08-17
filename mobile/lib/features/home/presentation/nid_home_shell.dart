@@ -39,7 +39,7 @@ class _NIDHomeShellState extends State<NIDHomeShell> {
     if (index == 0) return _buildHome();
     return PopScope(
       canPop: false,
-      onPopInvoked: (_) => setState(() => index = 0),
+      onPopInvokedWithResult: (_, __) => setState(() => index = 0),
       child: Stack(
         children: [
           pages[index],

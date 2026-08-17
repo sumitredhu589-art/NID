@@ -11,7 +11,7 @@ void main() {
         child: const NIDApp(),
       ),
     );
-    await tester.pump();
+    await tester.pumpAndSettle();
     expect(find.text('Welcome to NID'), findsOneWidget);
   });
 }
