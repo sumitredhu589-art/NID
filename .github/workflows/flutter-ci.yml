@@ -38,6 +38,10 @@ jobs:
           if [ ! -d android ]; then
             flutter create --platforms=android --project-name nid_mobile .
           fi
+      - name: Set explicit compileSdkVersion 35 in app build.gradle
+        run: |
+          sed -i 's/compileSdkVersion flutter\.compileSdkVersion/compileSdkVersion 35/' android/app/build.gradle
+          sed -i 's/compileSdk flutter\.compileSdkVersion/compileSdk 35/' android/app/build.gradle
       - name: Configure development fallback values
         run: |
           if [ -z "${API_BASE_URL}" ]; then
