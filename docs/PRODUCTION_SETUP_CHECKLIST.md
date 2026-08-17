@@ -1,5 +1,16 @@
 # NID Production Setup Checklist
 
+## Repository Production Integration Status (Codebase)
+- [x] Backend env validation enforces required secrets in production mode
+- [x] Backend auth supports production Firebase verification with development OTP fallback
+- [x] Backend AI proxy supports OpenAI with development fallback handling
+- [x] JWT refresh/session persistence wired with Prisma session records
+- [x] Mobile onboarding wired to backend OTP send/verify APIs with fallback UX
+- [x] Mobile AI screen wired to backend AI endpoint with fallback UX
+- [x] Home shell navigation can return to home and reach profile/gallery/menu/reels/AI/communication paths
+- [x] Backend lint/build/test/e2e pipelines pass locally
+- [ ] Flutter analyze/test/build executed in this environment (Flutter SDK unavailable in sandbox)
+
 ## Core Infrastructure
 - [ ] Production PostgreSQL instance provisioned and network-restricted
 - [ ] Production Redis instance provisioned and network-restricted

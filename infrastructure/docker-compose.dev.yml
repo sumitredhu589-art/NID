@@ -41,7 +41,7 @@ services:
       context: ../backend
       dockerfile: Dockerfile
     environment:
-      - DATABASE_URL=postgresql://nid_user:nid_password@postgres:5432/nid_db
+      - DATABASE_URL=******postgres:5432/nid_db
       - REDIS_URL=redis://redis:6379
       - MINIO_ENDPOINT=minio:9000
       - MINIO_ACCESS_KEY=minioadmin

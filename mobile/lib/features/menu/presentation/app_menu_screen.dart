@@ -17,11 +17,34 @@ class AppMenuScreen extends StatelessWidget {
           Expanded(
             child: GridView.count(
               crossAxisCount: 4,
-              children: apps.map((a) => Card(child: Center(child: Text(a, textAlign: TextAlign.center)))).toList(),
+              children: apps
+                  .map(
+                    (a) => Card(
+                      child: InkWell(
+                        onTap: () => _openApp(context, a),
+                        child: Center(child: Text(a, textAlign: TextAlign.center)),
+                      ),
+                    ),
+                  )
+                  .toList(),
             ),
           ),
         ],
       ),
+    );
+  }
+
+  void _openApp(BuildContext context, String appName) {
+    if (appName == 'Gallery') {
+      Navigator.pushNamed(context, '/gallery');
+      return;
+    }
+    if (appName == 'Contacts') {
+      Navigator.pushNamed(context, '/profile');
+      return;
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('$appName integration is pending connector setup.')),
     );
   }
 }

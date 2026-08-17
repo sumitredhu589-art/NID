@@ -6,8 +6,10 @@ import 'package:nid_mobile/features/communication/presentation/communication_scr
 import 'package:nid_mobile/features/conversations/presentation/conversations_screen.dart';
 import 'package:nid_mobile/features/menu/presentation/app_menu_screen.dart';
 import 'package:nid_mobile/features/notifications/presentation/notifications_screen.dart';
+import 'package:nid_mobile/features/profile/presentation/profile_screen.dart';
 import 'package:nid_mobile/features/reels/presentation/reels_screen.dart';
 import 'package:nid_mobile/features/search/presentation/search_maps_screen.dart';
+import 'package:nid_mobile/features/gallery/presentation/gallery_screen.dart';
 
 class NIDHomeShell extends StatefulWidget {
   const NIDHomeShell({super.key});
@@ -24,28 +26,50 @@ class _NIDHomeShellState extends State<NIDHomeShell> {
     ConversationsScreen(),
     SearchMapsScreen(),
     CameraScreen(),
+    GalleryScreen(),
     ReelsScreen(),
     AiScreen(),
     CommunicationScreen(),
     AppMenuScreen(),
+    ProfileScreen(),
   ];
 
   @override
   Widget build(BuildContext context) {
     if (index == 0) return _buildHome();
-    return Scaffold(body: pages[index]);
+    return WillPopScope(
+      onWillPop: () async {
+        setState(() => index = 0);
+        return false;
+      },
+      child: Stack(
+        children: [
+          pages[index],
+          Positioned(
+            top: 48,
+            left: 12,
+            child: IconButton(
+              onPressed: () => setState(() => index = 0),
+              icon: const Icon(Icons.home_outlined),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildHome() {
     return Scaffold(
       body: GestureDetector(
         onHorizontalDragEnd: (d) {
-          if ((d.primaryVelocity ?? 0) > 0) setState(() => index = 6);
-          if ((d.primaryVelocity ?? 0) < 0) setState(() => index = 7);
-        },
-        onVerticalDragEnd: (d) {
+          if ((d.primaryVelocity ?? 0) > 0) setState(() => index = 7);
           if ((d.primaryVelocity ?? 0) < 0) setState(() => index = 8);
         },
+        onVerticalDragEnd: (d) {
+          if ((d.primaryVelocity ?? 0) < 0) setState(() => index = 9);
+          if ((d.primaryVelocity ?? 0) > 0) setState(() => index = 10);
+        },
+        onDoubleTap: () => setState(() => index = 5),
         child: NIDEarthBackground(
           child: SafeArea(
             child: Stack(
@@ -55,7 +79,8 @@ class _NIDHomeShellState extends State<NIDHomeShell> {
                 Positioned(top: 12, right: 12, child: IconButton(onPressed: () => setState(() => index = 2), icon: const Icon(Icons.forum_outlined))),
                 Positioned(bottom: 18, left: 16, child: IconButton(onPressed: () => setState(() => index = 3), icon: const Icon(Icons.search))),
                 Positioned(bottom: 18, left: 0, right: 0, child: Center(child: IconButton(onPressed: () => setState(() => index = 4), icon: const Icon(Icons.camera_alt_outlined)))),
-                Positioned(bottom: 18, right: 16, child: IconButton(onPressed: () => setState(() => index = 5), icon: const Icon(Icons.smart_display_outlined))),
+                Positioned(bottom: 18, right: 16, child: IconButton(onPressed: () => setState(() => index = 6), icon: const Icon(Icons.smart_display_outlined))),
+                Positioned(top: 12, child: Center(child: SizedBox(width: MediaQuery.of(context).size.width, child: IconButton(onPressed: () => setState(() => index = 10), icon: const Icon(Icons.person_outline))))),
               ],
             ),
           ),

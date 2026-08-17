@@ -8,6 +8,7 @@ import { createResourceController } from './common/resource.factory';
 import { PrismaModule } from './prisma/prisma.module';
 import { QueueModule } from './queue/queue.module';
 import { JwtAccessGuard } from './security/jwt-access.guard';
+import { validateEnvironment } from './config/env.validation';
 
 const resources = [
   'users',
@@ -41,7 +42,7 @@ const controllers: Type[] = resources.map((resource) =>
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({ isGlobal: true, validate: validateEnvironment }),
     JwtModule.register({
       secret: process.env.JWT_ACCESS_TOKEN_SECRET || 'dev-secret',
     }),

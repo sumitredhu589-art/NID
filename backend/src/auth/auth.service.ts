@@ -16,6 +16,14 @@ export class AuthService {
     return this.configService.get<string>('JWT_REFRESH_TOKEN_SECRET') || 'dev-refresh-secret';
   }
 
+  private getStableUserIdentifiers(phoneNumber: string) {
+    const normalized = phoneNumber.replace(/[^0-9]/g, '') || 'user';
+    return {
+      publicNidId: `${normalized}.nid`,
+      privateMailId: `${normalized}@email.nid`,
+    };
+  }
+
   private async ensureFirebase() {
     const { cert, getApps, initializeApp } = await import('firebase-admin/app');
     if (getApps().length) return;
@@ -33,22 +41,23 @@ export class AuthService {
   }
 
   async sendOtp(phoneNumber: string) {
-    return { phoneNumber, fallback: !process.env.FIREBASE_PROJECT_ID };
+    return { phoneNumber: phoneNumber.trim(), fallback: !process.env.FIREBASE_PROJECT_ID };
   }
 
   async verifyOtp(phoneNumber: string, otp: string) {
+    const normalizedPhoneNumber = phoneNumber.trim();
     if (process.env.NODE_ENV === 'production') {
       await this.ensureFirebase();
       const { getAuth } = await import('firebase-admin/auth');
       const decoded = await getAuth().verifyIdToken(otp);
-      if (decoded.phone_number !== phoneNumber) {
+      if (decoded.phone_number !== normalizedPhoneNumber) {
         throw new UnauthorizedException('Phone number mismatch');
       }
     } else if (otp !== '123456') {
       throw new UnauthorizedException('Invalid development OTP');
     }
 
-    const payload = { sub: phoneNumber, scope: 'user' };
+    const payload = { sub: normalizedPhoneNumber, scope: 'user' };
     const refreshToken = await this.jwtService.signAsync(payload, {
       expiresIn: '30d',
       secret: this.refreshSecret,
@@ -57,13 +66,14 @@ export class AuthService {
     const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
     try {
+      const identifiers = this.getStableUserIdentifiers(normalizedPhoneNumber);
       const user = await this.prisma.user.upsert({
-        where: { phoneNumber },
+        where: { phoneNumber: normalizedPhoneNumber },
         update: {},
         create: {
-          phoneNumber,
-          publicNidId: `${phoneNumber.replace(/[^0-9]/g, '').slice(-8) || 'user'}.nid`,
-          privateMailId: `${phoneNumber.replace(/[^0-9]/g, '').slice(-8) || 'user'}@email.nid`,
+          phoneNumber: normalizedPhoneNumber,
+          publicNidId: identifiers.publicNidId,
+          privateMailId: identifiers.privateMailId,
           displayName: 'NID User',
         },
       });

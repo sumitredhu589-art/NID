@@ -1,9 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:nid_mobile/core/state/app_session.dart';
+import 'package:nid_mobile/features/gallery/presentation/gallery_screen.dart';
 import 'package:nid_mobile/features/home/presentation/nid_home_shell.dart';
 import 'package:nid_mobile/features/onboarding/presentation/onboarding_flow.dart';
+import 'package:nid_mobile/features/profile/presentation/profile_screen.dart';
+import 'package:provider/provider.dart';
 
 void main() {
-  runApp(const NIDApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => AppSession(),
+      child: const NIDApp(),
+    ),
+  );
 }
 
 class NIDApp extends StatelessWidget {
@@ -21,6 +30,8 @@ class NIDApp extends StatelessWidget {
       routes: {
         '/': (_) => const OnboardingFlow(),
         '/home': (_) => const NIDHomeShell(),
+        '/gallery': (_) => const GalleryScreen(),
+        '/profile': (_) => const ProfileScreen(),
       },
     );
   }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:nid_mobile/core/widgets/nid_components.dart';
+import 'package:nid_mobile/features/ai/data/ai_api.dart';
 
 class AiScreen extends StatefulWidget {
   const AiScreen({super.key});
@@ -10,8 +11,10 @@ class AiScreen extends StatefulWidget {
 
 class _AiScreenState extends State<AiScreen> {
   final input = TextEditingController();
+  final api = AiApi();
   final messages = <String>['NID AI ready.'];
   bool listening = false;
+  bool loading = false;
 
   @override
   void dispose() {
@@ -32,17 +35,27 @@ class _AiScreenState extends State<AiScreen> {
             icon: Icon(listening ? Icons.mic : Icons.mic_none),
           ),
           IconButton(
-            onPressed: () {
-              setState(() {
-                messages.add('You: ${input.text}');
-                messages.add('AI: AI is unavailable in this environment.');
-                input.clear();
-              });
-            },
+            onPressed: loading ? null : _sendPrompt,
             icon: const Icon(Icons.send),
           ),
         ])
       ]),
     );
+  }
+
+  Future<void> _sendPrompt() async {
+    final prompt = input.text.trim();
+    if (prompt.isEmpty) return;
+    setState(() {
+      loading = true;
+      messages.add('You: $prompt');
+      input.clear();
+    });
+    final response = await api.sendPrompt(prompt: prompt);
+    if (!mounted) return;
+    setState(() {
+      loading = false;
+      messages.add('AI: ${response ?? 'AI is unavailable in this environment.'}');
+    });
   }
 }

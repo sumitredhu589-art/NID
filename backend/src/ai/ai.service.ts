@@ -7,7 +7,10 @@ export class AiService {
 
   constructor() {
     if (process.env.OPENAI_API_KEY) {
-      this.client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+      this.client = new OpenAI({
+        apiKey: process.env.OPENAI_API_KEY,
+        baseURL: process.env.OPENAI_API_BASE,
+      });
     }
   }
 
@@ -16,10 +19,15 @@ export class AiService {
       return { message: `DEV_FALLBACK: ${prompt}`, fallback: true };
     }
 
-    const completion = await this.client.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [{ role: 'user', content: prompt }],
-    });
-    return { message: completion.choices[0]?.message?.content ?? '', fallback: false };
+    try {
+      const completion = await this.client.chat.completions.create({
+        model: 'gpt-4o-mini',
+        messages: [{ role: 'user', content: prompt }],
+      });
+      return { message: completion.choices[0]?.message?.content ?? '', fallback: false };
+    } catch (error) {
+      if (process.env.NODE_ENV === 'production') throw error;
+      return { message: `DEV_FALLBACK: ${prompt}`, fallback: true };
+    }
   }
 }
