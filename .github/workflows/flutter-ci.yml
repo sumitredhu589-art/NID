@@ -65,6 +65,7 @@ jobs:
       - run: flutter pub get
       - name: Patch plugin build.gradle files
         env:
+          # Matches Flutter 3.24.0's default Android NDK version.
           NDK_VERSION: 23.1.7779620
         run: |
           # Patch any plugin build.gradle files that reference flutter.compileSdkVersion,
