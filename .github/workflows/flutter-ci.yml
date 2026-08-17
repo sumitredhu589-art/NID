@@ -43,8 +43,6 @@ jobs:
           if [ -z "${API_BASE_URL}" ]; then
             echo "API_BASE_URL=http://10.0.2.2:4000/api" >> "$GITHUB_ENV"
             echo "Using development fallback API_BASE_URL."
-          else
-            echo "API_BASE_URL=${API_BASE_URL}" >> "$GITHUB_ENV"
           fi
       - run: flutter pub get
       - run: flutter analyze
