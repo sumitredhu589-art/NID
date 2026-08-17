@@ -63,6 +63,16 @@ jobs:
             echo "Using development fallback API_BASE_URL."
           fi
       - run: flutter pub get
+      - name: Patch plugin build.gradle files
+        run: |
+          # Patch any plugin build.gradle files that reference flutter.compileSdkVersion,
+          # flutter.targetSdkVersion, or flutter.minSdkVersion, which are not resolvable
+          # in all Gradle plugin evaluation contexts (e.g. speech_to_text 7.x).
+          find "$HOME/.pub-cache" -name "build.gradle" | while read f; do
+            sed -i "s/flutter\.compileSdkVersion/36/g" "$f"
+            sed -i "s/flutter\.targetSdkVersion/36/g" "$f"
+            sed -i "s/flutter\.minSdkVersion/21/g" "$f"
+          done
       - run: flutter analyze
       - run: flutter test
       - name: Build release APK
