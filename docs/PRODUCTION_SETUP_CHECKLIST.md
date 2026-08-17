@@ -23,6 +23,7 @@
 ## Backend Runtime Secrets / Environment Variables
 - [ ] `NODE_ENV=production`
 - [ ] `PORT`
+- [ ] `ALLOWED_ORIGINS` (comma-separated production client origins)
 - [ ] `DATABASE_URL`
 - [ ] `REDIS_URL`
 - [ ] `JWT_ACCESS_TOKEN_SECRET` (high entropy)

@@ -1,5 +1,6 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { Prisma } from '@prisma/client';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service';
@@ -95,11 +96,10 @@ export class AuthService {
   }
 
   async refresh(refreshToken: string) {
-    let decoded: { sub: string; scope: string } = { sub: 'dev-user', scope: 'user' };
+    const decoded = this.jwtService.verify<{ sub: string; scope: string }>(refreshToken, {
+      secret: this.refreshSecret,
+    });
     try {
-      decoded = this.jwtService.verify<{ sub: string; scope: string }>(refreshToken, {
-        secret: this.refreshSecret,
-      });
       const user = await this.prisma.user.findUnique({
         where: { phoneNumber: decoded.sub },
       });
@@ -114,13 +114,22 @@ export class AuthService {
         await this.prisma.session.delete({ where: { id: session.id } });
         throw new UnauthorizedException('Invalid session');
       }
-    } catch {
-      if (process.env.NODE_ENV === 'production') {
-        throw new UnauthorizedException('Invalid refresh token');
+    } catch (error) {
+      if (error instanceof UnauthorizedException) {
+        throw error;
       }
+      const allowDevFallback =
+        process.env.NODE_ENV !== 'production' && error instanceof Prisma.PrismaClientInitializationError;
+      if (allowDevFallback) {
+        return this.jwtService.sign(
+          { sub: decoded.sub, scope: decoded.scope },
+          { expiresIn: '15m' },
+        );
+      }
+      throw new UnauthorizedException('Invalid refresh token');
     }
     return this.jwtService.sign(
-      { sub: decoded?.sub ?? 'dev-user', scope: decoded?.scope ?? 'user' },
+      { sub: decoded.sub, scope: decoded.scope },
       { expiresIn: '15m' },
     );
   }

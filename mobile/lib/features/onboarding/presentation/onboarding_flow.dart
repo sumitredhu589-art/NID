@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:nid_mobile/core/widgets/nid_components.dart';
 import 'package:nid_mobile/core/state/app_session.dart';
 import 'package:nid_mobile/features/onboarding/data/auth_api.dart';
@@ -108,7 +109,10 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
       if (!mounted) return;
       setState(() => loading = false);
       if (!sent) {
-        setState(() => error = 'Could not reach backend. Use dev OTP 123456 and continue.');
+        setState(() => error = 'Could not reach backend. ${kReleaseMode ? 'Please try again.' : 'Use dev OTP 123456 and continue.'}');
+        if (kReleaseMode) {
+          return;
+        }
       }
       setState(() => step++);
       return;
@@ -120,7 +124,7 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
       if (!mounted) return;
       setState(() => loading = false);
       if (tokens == null) {
-        setState(() => error = 'OTP verification failed. In dev mode, use 123456.');
+        setState(() => error = 'OTP verification failed.${kReleaseMode ? '' : ' In dev mode, use 123456.'}');
         return;
       }
       context.read<AppSession>().setTokens(
