@@ -64,14 +64,18 @@ jobs:
           fi
       - run: flutter pub get
       - name: Patch plugin build.gradle files
+        env:
+          NDK_VERSION: 23.1.7779620
         run: |
           # Patch any plugin build.gradle files that reference flutter.compileSdkVersion,
-          # flutter.targetSdkVersion, or flutter.minSdkVersion, which are not resolvable
-          # in all Gradle plugin evaluation contexts (e.g. speech_to_text 7.x).
-          find "$HOME/.pub-cache" -name "build.gradle" | while read f; do
+          # flutter.targetSdkVersion, flutter.minSdkVersion, or flutter.ndkVersion,
+          # which are not resolvable in all Gradle plugin evaluation contexts
+          # (e.g. speech_to_text 7.x).
+          find "${PUB_CACHE:-$HOME/.pub-cache}" \( -name "build.gradle" -o -name "build.gradle.kts" \) | while read f; do
             sed -i "s/flutter\.compileSdkVersion/36/g" "$f"
             sed -i "s/flutter\.targetSdkVersion/36/g" "$f"
             sed -i "s/flutter\.minSdkVersion/21/g" "$f"
+            sed -i "s/flutter\.ndkVersion/${NDK_VERSION}/g" "$f"
           done
       - run: flutter analyze
       - run: flutter test
