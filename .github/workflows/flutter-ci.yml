@@ -63,6 +63,27 @@ jobs:
             echo "Using development fallback API_BASE_URL."
           fi
       - run: flutter pub get
+      - name: Patch speech_to_text pub-cache build.gradle
+        env:
+          COMPILE_SDK_VERSION: 36
+        run: |
+          STT_GRADLE="${HOME}/.pub-cache/hosted/pub.dev/speech_to_text-7.4.0/android/build.gradle"
+          if [ -f "$STT_GRADLE" ]; then
+            echo "--- Before patch (relevant lines) ---"
+            grep -n "compileSdk\|ndkVersion" "$STT_GRADLE" || true
+            sed -i "s/compileSdk = flutter\.compileSdkVersion/compileSdk = ${COMPILE_SDK_VERSION}/" "$STT_GRADLE"
+            sed -i "/ndkVersion = flutter\.ndkVersion/d" "$STT_GRADLE"
+            echo "--- After patch ---"
+            grep -n "compileSdk\|ndkVersion" "$STT_GRADLE" || true
+            # Verify no flutter.compileSdkVersion or flutter.ndkVersion remains
+            if grep -q "flutter\.compileSdkVersion\|flutter\.ndkVersion" "$STT_GRADLE"; then
+              echo "ERROR: flutter.compileSdkVersion or flutter.ndkVersion still present in $STT_GRADLE"
+              exit 1
+            fi
+            echo "Patch applied successfully."
+          else
+            echo "WARNING: $STT_GRADLE not found; skipping patch."
+          fi
       - run: flutter analyze
       - run: flutter test
       - name: Build release APK
