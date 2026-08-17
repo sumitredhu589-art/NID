@@ -12,6 +12,6 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    expect(find.text('Welcome'), findsOneWidget);
+    expect(find.text('Welcome to NID'), findsOneWidget);
   });
 }
