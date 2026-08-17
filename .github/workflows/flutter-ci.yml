@@ -73,7 +73,9 @@ jobs:
             grep -n "compileSdk\|ndkVersion" "$STT_GRADLE" || true
             sed -i "s/compileSdk = flutter\.compileSdkVersion/compileSdk = ${COMPILE_SDK_VERSION}/" "$STT_GRADLE"
             sed -i "/ndkVersion = flutter\.ndkVersion/d" "$STT_GRADLE"
-            echo "--- After patch ---"
+            echo "--- After patch (full file) ---"
+            cat "$STT_GRADLE"
+            echo "--- Grep check ---"
             grep -n "compileSdk\|ndkVersion" "$STT_GRADLE" || true
             # Verify no flutter.compileSdkVersion or flutter.ndkVersion remains
             if grep -q "flutter\.compileSdkVersion\|flutter\.ndkVersion" "$STT_GRADLE"; then
