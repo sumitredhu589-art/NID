@@ -37,11 +37,9 @@ class _NIDHomeShellState extends State<NIDHomeShell> {
   @override
   Widget build(BuildContext context) {
     if (index == 0) return _buildHome();
-    return WillPopScope(
-      onWillPop: () async {
-        setState(() => index = 0);
-        return false;
-      },
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (_, __) => setState(() => index = 0),
       child: Stack(
         children: [
           pages[index],
