@@ -1,17 +1,17 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:nid_mobile/main.dart';
 import 'package:nid_mobile/core/state/app_session.dart';
+import 'package:nid_mobile/main.dart';
 import 'package:provider/provider.dart';
 
 void main() {
-  testWidgets('NID app boots', (tester) async {
+  testWidgets('NID app boots and shows onboarding', (tester) async {
     await tester.pumpWidget(
       ChangeNotifierProvider(
         create: (_) => AppSession(),
         child: const NIDApp(),
       ),
     );
-    await tester.pumpAndSettle();
+    await tester.pump();
     expect(find.text('Welcome to NID'), findsOneWidget);
   });
 }
