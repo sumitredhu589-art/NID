@@ -20,6 +20,7 @@ jobs:
     env:
       CI: true
       API_BASE_URL: ${{ secrets.API_BASE_URL }}
+      COMPILE_SDK_VERSION: 36
     defaults:
       run:
         working-directory: mobile
@@ -39,8 +40,6 @@ jobs:
             flutter create --platforms=android --project-name nid_mobile .
           fi
       - name: Patch Android compileSdkVersion
-        env:
-          COMPILE_SDK_VERSION: 36
         run: |
           # Set explicit SDK versions in android/app/build.gradle.
           # compileSdk 36: satisfies flutter_tts (SDK 36) and flutter_plugin_android_lifecycle (SDK 35).
@@ -63,6 +62,23 @@ jobs:
             echo "Using development fallback API_BASE_URL."
           fi
       - run: flutter pub get
+      - name: Patch speech_to_text Android Gradle config
+        run: |
+          PUB_CACHE_DIR="${PUB_CACHE:-$HOME/.pub-cache}"
+          SPEECH_GRADLE="$(find "$PUB_CACHE_DIR/hosted/pub.dev" -path '*/speech_to_text-*/android/build.gradle' | head -n 1)"
+          if [ -z "$SPEECH_GRADLE" ]; then
+            echo "speech_to_text Android build.gradle not found in pub cache." >&2
+            exit 1
+          fi
+
+          sed -i "s/compileSdkVersion flutter\.compileSdkVersion/compileSdkVersion ${COMPILE_SDK_VERSION}/" "$SPEECH_GRADLE"
+          sed -i "s/compileSdk = flutter\.compileSdkVersion/compileSdk = ${COMPILE_SDK_VERSION}/" "$SPEECH_GRADLE"
+          sed -Ei '/ndkVersion([[:space:]]*=)?[[:space:]]*flutter\.ndkVersion/d' "$SPEECH_GRADLE"
+
+          if grep -qE 'flutter\.(compileSdkVersion|ndkVersion)' "$SPEECH_GRADLE"; then
+            echo "speech_to_text Android build.gradle still contains unresolved flutter.* references." >&2
+            exit 1
+          fi
       - run: flutter analyze
       - run: flutter test
       - name: Build release APK
