@@ -38,6 +38,20 @@ jobs:
           if [ ! -d android ]; then
             flutter create --platforms=android --project-name nid_mobile .
           fi
+      - name: Patch Android compileSdkVersion
+        run: |
+          # Ensure compileSdkVersion 36 is set to satisfy flutter_tts and flutter_plugin_android_lifecycle requirements
+          APP_GRADLE="android/app/build.gradle"
+          if [ -f "$APP_GRADLE" ]; then
+            sed -i 's/compileSdkVersion flutter\.compileSdkVersion/compileSdkVersion 36/' "$APP_GRADLE"
+            sed -i 's/compileSdk flutter\.compileSdkVersion/compileSdk 36/' "$APP_GRADLE"
+            # Ensure minSdk is at least 21
+            sed -i 's/minSdkVersion flutter\.minSdkVersion/minSdkVersion 21/' "$APP_GRADLE"
+            sed -i 's/minSdk flutter\.minSdkVersion/minSdk 21/' "$APP_GRADLE"
+            # Ensure targetSdk is at least 36
+            sed -i 's/targetSdkVersion flutter\.targetSdkVersion/targetSdkVersion 36/' "$APP_GRADLE"
+            sed -i 's/targetSdk flutter\.targetSdkVersion/targetSdk 36/' "$APP_GRADLE"
+          fi
       - name: Configure development fallback values
         run: |
           if [ -z "${API_BASE_URL}" ]; then
