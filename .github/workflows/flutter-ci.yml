@@ -68,10 +68,13 @@ jobs:
           # Patch any plugin build.gradle files that reference flutter.compileSdkVersion,
           # flutter.targetSdkVersion, or flutter.minSdkVersion, which are not resolvable
           # in all Gradle plugin evaluation contexts (e.g. speech_to_text 7.x).
-          find "$HOME/.pub-cache" -name "build.gradle" | while read f; do
-            sed -i "s/flutter\.compileSdkVersion/36/g" "$f"
-            sed -i "s/flutter\.targetSdkVersion/36/g" "$f"
-            sed -i "s/flutter\.minSdkVersion/21/g" "$f"
+          find "$HOME/.pub-cache" -name "build.gradle" -type f -print0 | while IFS= read -r -d '' f; do
+            sed -i \
+              -e 's/flutter\.compileSdkVersion/36/g' \
+              -e 's/flutter\.targetSdkVersion/36/g' \
+              -e 's/flutter\.minSdkVersion/21/g' \
+              -e 's/flutter\.ndkVersion/26.3.11579264/g' \
+              "$f"
           done
       - run: flutter analyze
       - run: flutter test
