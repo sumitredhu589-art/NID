@@ -6,7 +6,7 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_USER: nid_user
-      POSTGRES_PASSWORD: nid_password
+      POSTGRES_HOST_AUTH_METHOD: trust
       POSTGRES_DB: nid_db
     volumes:
       - pgdata:/var/lib/postgresql/data
@@ -38,10 +38,10 @@ services:
 
   backend:
     build:
-      context: ./backend
+      context: ../backend
       dockerfile: Dockerfile
     environment:
-      - DATABASE_URL=postgresql://nid_user:nid_password@postgres:5432/nid_db
+      - DATABASE_URL=postgresql://nid_user@postgres:5432/nid_db
       - REDIS_URL=redis://redis:6379
       - MINIO_ENDPOINT=minio:9000
       - MINIO_ACCESS_KEY=minioadmin
@@ -53,7 +53,7 @@ services:
     ports:
       - "4000:4000"
     volumes:
-      - ./backend:/usr/src/app
+      - ../backend:/usr/src/app
 
 volumes:
   pgdata:

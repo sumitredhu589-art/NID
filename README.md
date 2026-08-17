@@ -1,30 +1,40 @@
 # NID — One ID. All Access
 
-This repository contains the complete NID system: a production-oriented Flutter mobile application (iOS & Android), a NestJS backend, PostgreSQL database migrations, Redis sessions, AWS S3 media architecture, Google Maps, OpenAI integration, Firebase OTP authentication scaffolding, CI/CD workflows and full documentation.
+Production-oriented NID monorepo with:
+- `mobile/` Flutter application implementing onboarding, home gestures, AI assistant UI, communication, app menu, notifications, conversations, search/maps, camera, gallery, reels, profile
+- `backend/` NestJS API with Prisma/PostgreSQL schema, Redis/BullMQ queue wiring, auth fallback flows, AI proxy endpoint, and feature resources
+- `.github/workflows/` CI for backend, Flutter, Prisma validation
+- `docs/` architecture and setup docs including `docs/PRODUCTION_SETUP_CHECKLIST.md`
 
-This commit is an initial scaffold implementing the repository structure and core services. Follow the docs in /docs for full setup and development instructions.
+## Local Development
 
-Structure
+### Backend
+```bash
+cd backend
+npm install
+npm run prisma:generate
+npm run build
+npm run test:e2e
+npm run start:dev
+```
 
-NID/
-├── mobile/                # Flutter application
-├── backend/               # NestJS backend API
-├── database/              # SQL migrations
-├── infrastructure/        # Docker, Terraform (skeletons)
-├── docs/                  # Architecture and setup documentation
-├── scripts/               # Utility scripts for setup and deploy
-├── .github/               # CI/CD workflows
-├── .env.example           # Example environment variables
-├── README.md
-└── LICENSE
+### Mobile
+```bash
+cd mobile
+flutter pub get
+flutter test
+flutter run
+```
 
-Important
+### Infra (optional)
+```bash
+cd infrastructure
+docker compose -f docker-compose.dev.yml up -d
+```
 
-- Never commit real secrets. Use environment variables and secret stores.
-- The repository supports a development fallback mode so the app compiles and runs without production credentials.
-- See docs/PRODUCTION_SETUP_CHECKLIST.md for the consolidated list of required production credentials and steps.
+## Security and credentials
+- Never commit secrets.
+- All production credentials are env-driven.
+- Development fallbacks are implemented for missing provider credentials.
 
-Next steps
-
-- Read docs/getting-started.md to run the system locally using Docker and Firebase emulator or your Firebase project.
-- Populate .env (copy from .env.example) and set required credentials for production.
+See `docs/PRODUCTION_SETUP_CHECKLIST.md` for complete production requirements.
