@@ -37,6 +37,7 @@ jobs:
         run: |
           if [ ! -d android ]; then
             flutter create --platforms=android --project-name nid_mobile .
+            rm -f test/widget_test.dart
           fi
       - name: Configure development fallback values
         run: |
