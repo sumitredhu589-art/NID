@@ -6,7 +6,9 @@ import 'package:nid_mobile/features/onboarding/data/auth_api.dart';
 import 'package:provider/provider.dart';
 
 class OnboardingFlow extends StatefulWidget {
-  const OnboardingFlow({super.key});
+  const OnboardingFlow({super.key, this.authApi});
+
+  final AuthApi? authApi;
 
   @override
   State<OnboardingFlow> createState() => _OnboardingFlowState();
@@ -18,10 +20,11 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
   final publicId = TextEditingController();
   final privateId = TextEditingController();
   final name = TextEditingController();
-  final authApi = AuthApi();
   int step = 0;
   bool loading = false;
   String? error;
+
+  late final AuthApi authApi = widget.authApi ?? AuthApi();
 
   @override
   void dispose() {
@@ -123,13 +126,14 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
       final tokens = await authApi.verifyOtp(phoneNumber: mobile.text.trim(), otp: otp.text.trim());
       if (!mounted) return;
       setState(() => loading = false);
-      if (tokens == null) {
+      final resolvedTokens = tokens ?? _offlineDevTokens();
+      if (resolvedTokens == null) {
         setState(() => error = 'OTP verification failed.${kReleaseMode ? '' : ' In dev mode, use 123456.'}');
         return;
       }
       context.read<AppSession>().setTokens(
-            newAccessToken: tokens.accessToken,
-            newRefreshToken: tokens.refreshToken,
+            newAccessToken: resolvedTokens.accessToken,
+            newRefreshToken: resolvedTokens.refreshToken,
             newPhoneNumber: mobile.text.trim(),
           );
       setState(() => step++);
@@ -142,6 +146,16 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
     }
 
     Navigator.pushReplacementNamed(context, '/home');
+  }
+
+  AuthTokens? _offlineDevTokens() {
+    if (kReleaseMode || otp.text.trim() != '123456') {
+      return null;
+    }
+    return const AuthTokens(
+      accessToken: 'dev-access-token',
+      refreshToken: 'dev-refresh-token',
+    );
   }
 }
 
