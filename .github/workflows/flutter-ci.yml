@@ -42,19 +42,15 @@ jobs:
         env:
           COMPILE_SDK_VERSION: 36
         run: |
-          # Set explicit SDK versions in android/app/build.gradle.
+          # Patch explicit SDK versions in android/app/build.gradle.
           # compileSdk 36: satisfies flutter_tts (SDK 36) and flutter_plugin_android_lifecycle (SDK 35).
-          # This replaces the flutter.compileSdkVersion / flutter.targetSdkVersion references
-          # which are not always resolvable in all Gradle plugin contexts.
+          # Use a broad replacement that handles both `compileSdk flutter.X` and `compileSdk = flutter.X`.
           APP_GRADLE="android/app/build.gradle"
           if [ -f "$APP_GRADLE" ]; then
-            sed -i "s/compileSdkVersion flutter\.compileSdkVersion/compileSdkVersion ${COMPILE_SDK_VERSION}/" "$APP_GRADLE"
-            sed -i "s/compileSdk flutter\.compileSdkVersion/compileSdk ${COMPILE_SDK_VERSION}/" "$APP_GRADLE"
-            sed -i "s/targetSdkVersion flutter\.targetSdkVersion/targetSdkVersion ${COMPILE_SDK_VERSION}/" "$APP_GRADLE"
-            sed -i "s/targetSdk flutter\.targetSdkVersion/targetSdk ${COMPILE_SDK_VERSION}/" "$APP_GRADLE"
-            # Ensure minSdk is at least 21
-            sed -i 's/minSdkVersion flutter\.minSdkVersion/minSdkVersion 21/' "$APP_GRADLE"
-            sed -i 's/minSdk flutter\.minSdkVersion/minSdk 21/' "$APP_GRADLE"
+            sed -i "s/flutter\.compileSdkVersion/${COMPILE_SDK_VERSION}/g" "$APP_GRADLE"
+            sed -i "s/flutter\.targetSdkVersion/${COMPILE_SDK_VERSION}/g" "$APP_GRADLE"
+            sed -i "s/flutter\.minSdkVersion/21/g" "$APP_GRADLE"
+            sed -i "s/flutter\.ndkVersion/\"27.0.12077973\"/g" "$APP_GRADLE"
           fi
       - name: Configure development fallback values
         run: |
@@ -65,14 +61,17 @@ jobs:
       - run: flutter pub get
       - name: Patch plugin build.gradle files
         run: |
-          # Patch any plugin build.gradle files that reference flutter.compileSdkVersion,
-          # flutter.targetSdkVersion, or flutter.minSdkVersion, which are not resolvable
-          # in all Gradle plugin evaluation contexts (e.g. speech_to_text 7.x).
-          find "$HOME/.pub-cache" -name "build.gradle" | while read f; do
-            sed -i "s/flutter\.compileSdkVersion/36/g" "$f"
-            sed -i "s/flutter\.targetSdkVersion/36/g" "$f"
-            sed -i "s/flutter\.minSdkVersion/21/g" "$f"
-          done
+          # Patch pub-cache plugin build.gradle files that reference flutter.* properties
+          # (compileSdkVersion, targetSdkVersion, minSdkVersion, ndkVersion).
+          # speech_to_text 7.x references flutter.compileSdkVersion AND flutter.ndkVersion.
+          # The `|| true` prevents failure if no files are found.
+          find "$HOME/.pub-cache" -name "build.gradle" -print0 \
+            | xargs -0 sed -i \
+                -e "s/flutter\.compileSdkVersion/36/g" \
+                -e "s/flutter\.targetSdkVersion/36/g" \
+                -e "s/flutter\.minSdkVersion/21/g" \
+                -e "s/flutter\.ndkVersion/\"27.0.12077973\"/g" \
+            2>/dev/null || true
       - run: flutter analyze
       - run: flutter test
       - name: Build release APK
